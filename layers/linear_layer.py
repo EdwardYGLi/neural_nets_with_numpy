@@ -2,7 +2,6 @@
 Created by Edward Li at 8/23/20
 """
 import numpy as np
-from layers.nn_layer import NNLayer
 
 
 def Linear(NNLayer):
@@ -25,7 +24,6 @@ def Linear(NNLayer):
         # add bias if specified
         if self.bias is not None:
             self.output += self.bias
-
         return self.output
 
     def backward(self, output_error, learning_rate):
@@ -46,7 +44,7 @@ def Linear(NNLayer):
         # because dyj/dxi = wij (linear layer)
         # dE/dxi = dE/dy1 * wi1 +  .... + dE/dyj * wij
         # dE/dX = dE/dY * wT
-        self.gradients["input_grad"] = np.dot(output_error,self.weights.T)
+        self.gradients["input_grad"] = np.dot(output_error, self.weights.T)
 
         return self.gradients["input_grad"]
 
@@ -54,6 +52,3 @@ def Linear(NNLayer):
         # update learning rates
         self.weights -= learning_rate * self.gradients["weights_grad"]
         self.bias -= learning_rate * self.gradients["bias_grad"]
-
-
-
