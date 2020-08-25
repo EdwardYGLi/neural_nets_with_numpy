@@ -33,11 +33,11 @@ class Conv2D(NNLayer):
         padded = np.pad(inputs, self.padding, mode="constant")
 
         s = self.stride
-        for f in n_f:
+        for f in range(n_f):
             # vertically
-            for j in out_h:
+            for j in range(out_h):
                 # horizontally
-                for i in out_w:
+                for i in range(out_w):
                     output[i, j, f] = np.sum(padded[j * s:j * s + k, i * s:i:s + k, :] * self.filters[f, :]) + \
                                       self.bias[f]
 
@@ -54,12 +54,40 @@ class Conv2D(NNLayer):
         h, w, c = self.inputs.shape
         h_o, w_o, c_o = self.outputs.shape
         n_f, k, _, n_in = self.filters.shape
+        s = self.stride
+        # dE/dW = X (x) Y, input convolved with output error, gives us our kernel weight gradients
+        dW = np.zeros_like(self.filters)
 
-        # dE/dW = X (x) Y, input convolved with output, gives us our kernel weight gradients
+        for f in range(n_f):
+            for j in range(h_o):
+                for i in range(w_o):
+                    for m in range(k):
+                        for n in range(k):
+                            for cc in range(c):
+                                dW[f,m,n,cc] += error[j,i,f] * self.inputs[s*j+m,s*i+n,cc]
+
 
         # dE/dX = Y (x) W', error convolved with our transpose weights
+        dX = np.zeros_like(self.inputs)
+        dXpad = np.pad(dX,(0,0,self.padding,self.padding), mode="constant")
+        
+        for j in range(h_o):
+            for i in range(w_o):
+                for m in range(k):
+                    for n in range(k):
+                        for f in range(n_f):
+                            for cc in range(c):
+                                dXpad[s*j+m,s*i+n,cc] += error[j,i,f] * w[f,m,n,cc]
 
+        if self.padding > 0 :
+            dX = dXpad[self.padding:-self.padding,self.padding:-self.padding,:]
+        else:
+            dX = dXpad
+            
+
+        self.gradients["input_grad"] = dX
+        self.gradients["weight_grad"] = dW
         # dE/dbj = SUM(Yj) (bias gradient is just output gradient)
         self.gradients["bias_grad"] = np.sum(error, axis=[0, 1])
 
-        pass
+        return dX
