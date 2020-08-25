@@ -46,8 +46,20 @@ class Conv2D(NNLayer):
 
         return output
 
-    def backward(self,error):
+    def backward(self, error):
         """
         backward pass
         """
+
+        h, w, c = self.inputs.shape
+        h_o, w_o, c_o = self.outputs.shape
+        n_f, k, _, n_in = self.filters.shape
+
+        # dE/dW = X (x) Y, input convolved with output, gives us our kernel weight gradients
+
+        # dE/dX = Y (x) W', error convolved with our transpose weights
+
+        # dE/dbj = SUM(Yj) (bias gradient is just output gradient)
+        self.gradients["bias_grad"] = np.sum(error, axis=[0, 1])
+
         pass
