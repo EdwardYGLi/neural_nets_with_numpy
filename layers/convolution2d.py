@@ -38,7 +38,7 @@ class Conv2D(NNLayer):
             for j in range(out_h):
                 # horizontally
                 for i in range(out_w):
-                    output[i, j, f] = np.sum(padded[j * s:j * s + k, i * s:i:s + k, :] * self.filters[f, :]) + \
+                    output[i, j, f] = np.sum(padded[j * s:j * s + k, i * s:i*s + k, :] * self.filters[f, :]) + \
                                       self.bias[f]
 
         self.inputs = padded
